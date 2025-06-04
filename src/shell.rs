@@ -1,10 +1,12 @@
-use crate::occu_core::{self, Event};
+use crate::occu_core::Event;
+use chrono::DateTime;
 use ordermap::OrderMap;
-use std::{collections::HashMap, io};
+use std::io;
 use uuid::Uuid;
 
 #[derive(Debug)]
 enum OccuError {
+    InvalidUuidTimestamp,
     EventExists,
     RequiresArgs(u8),
 }
@@ -12,6 +14,7 @@ enum OccuError {
 impl OccuError {
     fn handle(&self) {
         match self {
+            Self::InvalidUuidTimestamp => eprintln!("Couldn't parse timestamp from UUID v7."),
             Self::EventExists => eprintln!("Event already exists."),
             Self::RequiresArgs(count) => eprintln!("Command requires {} argument(s).", count),
         }
@@ -28,6 +31,7 @@ pub fn run_shell() {
         let _byte_count = io::stdin()
             .read_line(&mut input)
             .expect("Failed to read_line.");
+
         // Split input
         let input_vec: Vec<&str> = input.split_whitespace().collect();
 
@@ -62,8 +66,17 @@ fn add_event(
 
 fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
     println!("====== Events ======");
-    for (k, v) in event_map {
-        println!("{k}:\n {v:?}\n");
+    for (k, event) in event_map {
+        // Iterate through events, extracting and displaying the UUID v7 timestamp.
+        let unix_timestamp = match k.get_timestamp() {
+            Some(ts) => {
+                let (secs, nsecs) = ts.to_unix();
+                DateTime::from_timestamp(secs as i64, nsecs)
+            }
+            None => return Err(OccuError::InvalidUuidTimestamp),
+        };
+        let str_timestamp = unix_timestamp.ok_or(OccuError::InvalidUuidTimestamp)?;
+        println!("{str_timestamp}:\n {event:?}\n");
     }
     Ok(())
 }
@@ -80,6 +93,6 @@ fn cmd_new_event(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuErro
     add_event(title, description, event_map)
 }
 
-fn cmd_list_events(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuError> {
+fn cmd_list_events(_args: &[&str], event_map: &mut EventMap) -> Result<(), OccuError> {
     list_events(event_map)
 }
