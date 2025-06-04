@@ -1,13 +1,19 @@
 use crate::occu_core::Event;
 use chrono::DateTime;
 use ordermap::OrderMap;
-use std::io;
+use std::{
+    error::Error,
+    io::{self, Write},
+};
 use uuid::Uuid;
 
 #[derive(Debug)]
 enum OccuError {
-    InvalidUuidTimestamp,
+    Error(Box<dyn Error>),
     EventExists,
+
+    InvalidUuidTimestamp,
+
     RequiresArgs(u8),
 }
 
@@ -15,8 +21,9 @@ impl OccuError {
     fn handle(&self) {
         match self {
             Self::InvalidUuidTimestamp => eprintln!("Couldn't parse timestamp from UUID v7."),
-            Self::EventExists => eprintln!("Event already exists."),
+            Self::EventExists => eprintln!("Duplicate Event exists in memory."),
             Self::RequiresArgs(count) => eprintln!("Command requires {} argument(s).", count),
+            Self::Error(e) => eprintln!("Wrapped error: {}", *e),
         }
     }
 }
@@ -27,6 +34,8 @@ pub fn run_shell() {
     let mut event_map: EventMap = OrderMap::new();
 
     'main: loop {
+        print!("> ");
+        io::stdout().flush().expect("Failed to flush stdout.");
         let mut input = String::new();
         let _byte_count = io::stdin()
             .read_line(&mut input)
@@ -39,6 +48,7 @@ pub fn run_shell() {
         let cmd_fn: CmdFunc = match input_vec[0] {
             "new" => cmd_new_event,
             "list" => cmd_list_events,
+            "rm" => cmd_remove_event,
 
             "exit" | "quit" => std::process::exit(0),
             _ => continue 'main,
@@ -66,7 +76,7 @@ fn add_event(
 
 fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
     println!("====== Events ======");
-    for (k, event) in event_map {
+    for (i, (k, event)) in event_map.iter().enumerate() {
         // Iterate through events, extracting and displaying the UUID v7 timestamp.
         let unix_timestamp = match k.get_timestamp() {
             Some(ts) => {
@@ -75,9 +85,15 @@ fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
             }
             None => return Err(OccuError::InvalidUuidTimestamp),
         };
-        let str_timestamp = unix_timestamp.ok_or(OccuError::InvalidUuidTimestamp)?;
-        println!("{str_timestamp}:\n {event:?}\n");
+        let str_timestamp = unix_timestamp
+            .ok_or(OccuError::InvalidUuidTimestamp)?
+            .format("%Y-%m-%d");
+        println!("{i}. {str_timestamp}:\n {event:?}\n");
     }
+    Ok(())
+}
+
+fn remove_event(event_idx: usize, event_map: &EventMap) -> Result<(), OccuError> {
     Ok(())
 }
 
@@ -95,4 +111,17 @@ fn cmd_new_event(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuErro
 
 fn cmd_list_events(_args: &[&str], event_map: &mut EventMap) -> Result<(), OccuError> {
     list_events(event_map)
+}
+
+fn cmd_remove_event(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuError> {
+    if args.len() < 1 {
+        return Err(OccuError::RequiresArgs(1));
+    }
+    // Parse index
+    let idx = match args[0].parse::<usize>() {
+        Ok(i) => i,
+        Err(e) => return Err(OccuError::Error(Box::new(e))),
+    };
+
+    remove_event(idx, event_map)
 }
