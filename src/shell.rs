@@ -10,9 +10,11 @@ use uuid::Uuid;
 #[derive(Debug)]
 enum OccuError {
     Error(Box<dyn Error>),
+
     EventExists,
 
     InvalidUuidTimestamp,
+    InvalidIndex,
 
     RequiresArgs(u8),
 }
@@ -20,10 +22,11 @@ enum OccuError {
 impl OccuError {
     fn handle(&self) {
         match self {
-            Self::InvalidUuidTimestamp => eprintln!("Couldn't parse timestamp from UUID v7."),
-            Self::EventExists => eprintln!("Duplicate Event exists in memory."),
-            Self::RequiresArgs(count) => eprintln!("Command requires {} argument(s).", count),
             Self::Error(e) => eprintln!("Wrapped error: {}", *e),
+            Self::EventExists => eprintln!("Duplicate Event exists in memory."),
+            Self::InvalidUuidTimestamp => eprintln!("Couldn't parse timestamp from UUID v7."),
+            Self::InvalidIndex => eprintln!("Invalid index."),
+            Self::RequiresArgs(count) => eprintln!("Command requires {} argument(s).", count),
         }
     }
 }
@@ -47,8 +50,8 @@ pub fn run_shell() {
         // Match commands
         let cmd_fn: CmdFunc = match input_vec[0] {
             "new" => cmd_new_event,
-            "list" => cmd_list_events,
-            "rm" => cmd_remove_event,
+            "list" | "ls" => cmd_list_events,
+            "remove" | "rm" => cmd_remove_event,
 
             "exit" | "quit" => std::process::exit(0),
             _ => continue 'main,
@@ -93,7 +96,18 @@ fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
     Ok(())
 }
 
-fn remove_event(event_idx: usize, event_map: &EventMap) -> Result<(), OccuError> {
+fn remove_event(event_idx: usize, event_map: &mut EventMap) -> Result<(), OccuError> {
+    let event = event_map.get_index(event_idx);
+
+    if let Some((_, event)) = &event {
+        println!(
+            "Are you sure you want to delete event \"{}\"? y/N",
+            event.title()
+        );
+        if get_yes_no() {
+            event_map.remove_index(event_idx);
+        }
+    };
     Ok(())
 }
 
@@ -114,7 +128,7 @@ fn cmd_list_events(_args: &[&str], event_map: &mut EventMap) -> Result<(), OccuE
 }
 
 fn cmd_remove_event(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuError> {
-    if args.len() < 1 {
+    if args.len() > 1 {
         return Err(OccuError::RequiresArgs(1));
     }
     // Parse index
@@ -124,4 +138,19 @@ fn cmd_remove_event(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuE
     };
 
     remove_event(idx, event_map)
+}
+
+// Misc
+
+fn get_yes_no() -> bool {
+    let mut input = String::new();
+    let _byte_count = io::stdin().read_line(&mut input);
+    if input.is_empty() {
+        return false;
+    }
+    match input.to_lowercase().chars().next() {
+        Some('y') => true,
+        Some('n') => false,
+        _ => false,
+    }
 }

@@ -51,4 +51,12 @@ impl Event {
         let new_occu = Occurance::new(self.occurances.len(), title, description);
         self.occurances.push(new_occu);
     }
+
+    pub fn title(&self) -> &String {
+        &self.title
+    }
+
+    pub fn id(&self) -> &Uuid {
+        &self.uuid
+    }
 }
