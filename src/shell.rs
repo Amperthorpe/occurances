@@ -46,6 +46,9 @@ pub fn run_shell() {
 
         // Split input
         let input_vec: Vec<&str> = input.split_whitespace().collect();
+        if input_vec.is_empty() {
+            continue 'main;
+        }
 
         // Match commands
         let cmd_fn: CmdFunc = match input_vec[0] {
