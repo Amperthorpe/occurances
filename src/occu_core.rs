@@ -42,6 +42,11 @@ impl Event {
         }
     }
 
+    pub fn new_for_map(title: String, description: String) -> (Uuid, Self) {
+        let new_event = Self::new(title, description);
+        (new_event.uuid, new_event)
+    }
+
     pub fn occur(&mut self, title: String, description: String) {
         let new_occu = Occurance::new(self.occurances.len(), title, description);
         self.occurances.push(new_occu);
