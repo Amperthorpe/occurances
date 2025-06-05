@@ -10,7 +10,7 @@ pub struct Occurance {
     title: String,
     description: String,
     created_at: DateTime<Local>,
-    custom_metadata: HashMap<String, String>,
+    metadata: HashMap<String, String>,
 }
 
 impl Occurance {
@@ -20,8 +20,15 @@ impl Occurance {
             title,
             description,
             created_at: Local::now(),
-            custom_metadata: HashMap::new(),
+            metadata: HashMap::new(),
         }
+    }
+
+    fn is_valid_metadata(&self) -> bool {
+        !self
+            .metadata
+            .keys()
+            .any(|k| k.contains('\n') || k.contains(':'))
     }
 }
 
