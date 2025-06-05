@@ -44,7 +44,7 @@ pub fn run_shell() {
             .read_line(&mut input)
             .expect("Failed to read_line.");
 
-        // Split input
+        // Split input and continue loop on empty
         let input_vec: Vec<&str> = input.split_whitespace().collect();
         if input_vec.is_empty() {
             continue 'main;
@@ -82,21 +82,26 @@ fn add_event(
 
 fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
     println!("====== Events ======");
-    for (i, (k, event)) in event_map.iter().enumerate() {
-        // Iterate through events, extracting and displaying the UUID v7 timestamp.
-        let unix_timestamp = match k.get_timestamp() {
-            Some(ts) => {
-                let (secs, nsecs) = ts.to_unix();
-                DateTime::from_timestamp(secs as i64, nsecs)
-            }
-            None => return Err(OccuError::InvalidUuidTimestamp),
-        };
-        let str_timestamp = unix_timestamp
-            .ok_or(OccuError::InvalidUuidTimestamp)?
-            .format("%Y-%m-%d");
-        println!("{i}. {str_timestamp}:\n {event:?}\n");
+    if event_map.is_empty() {
+        println!("    No events.");
+        Ok(())
+    } else {
+        for (i, (k, event)) in event_map.iter().enumerate() {
+            // Iterate through events, extracting and displaying the UUID v7 timestamp.
+            let unix_timestamp = match k.get_timestamp() {
+                Some(ts) => {
+                    let (secs, nsecs) = ts.to_unix();
+                    DateTime::from_timestamp(secs as i64, nsecs)
+                }
+                None => return Err(OccuError::InvalidUuidTimestamp),
+            };
+            let str_timestamp = unix_timestamp
+                .ok_or(OccuError::InvalidUuidTimestamp)?
+                .format("%Y-%m-%d %I:%M %p");
+            println!("{i}. {str_timestamp}:\n {event:?}\n");
+        }
+        Ok(())
     }
-    Ok(())
 }
 
 fn remove_event(event_idx: usize, event_map: &mut EventMap) -> Result<(), OccuError> {
@@ -144,7 +149,6 @@ fn cmd_remove_event(args: &[&str], event_map: &mut EventMap) -> Result<(), OccuE
 }
 
 // Misc
-
 fn get_yes_no() -> bool {
     let mut input = String::new();
     let _byte_count = io::stdin().read_line(&mut input);
