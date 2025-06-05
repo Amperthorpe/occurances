@@ -1,5 +1,5 @@
 use crate::occu_core::Event;
-use chrono::DateTime;
+use chrono::{DateTime, Local};
 use ordermap::OrderMap;
 use std::{
     error::Error,
@@ -97,8 +97,9 @@ fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
             };
             let str_timestamp = unix_timestamp
                 .ok_or(OccuError::InvalidUuidTimestamp)?
+                .with_timezone(&Local)
                 .format("%Y-%m-%d %I:%M %p");
-            println!("{i}. {str_timestamp}:\n {event:?}\n");
+            println!("{i}. {str_timestamp}\n {event:?}\n");
         }
         Ok(())
     }

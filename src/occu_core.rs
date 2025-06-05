@@ -1,6 +1,7 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -24,7 +25,6 @@ impl Occurance {
     }
 }
 
-#[derive(Debug)]
 pub struct Event {
     uuid: Uuid,
     title: String,
@@ -58,5 +58,15 @@ impl Event {
 
     pub fn id(&self) -> &Uuid {
         &self.uuid
+    }
+}
+
+impl fmt::Display for Event {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Event ( uuid: {}, title: {}, occurances: WIP )",
+            self.uuid, self.title
+        )
     }
 }
