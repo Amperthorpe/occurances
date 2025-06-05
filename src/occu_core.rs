@@ -66,11 +66,11 @@ impl Event {
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let last_four = last_four_chars(self.uuid.to_string());
-        write!(
-            f,
-            "Event ( uuid: {}, title: {}, occurances: WIP )",
-            last_four, self.title
-        )
+        writeln!(f, "Event ( uuid: {}, title: {} )", last_four, self.title)?;
+        for occu in &self.occurances {
+            writeln!(f, "{}", occu)?;
+        }
+        Ok(())
     }
 }
 
