@@ -25,6 +25,12 @@ impl Occurance {
     }
 }
 
+impl fmt::Display for Occurance {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Occurance [ {}: '{}' ]", self.id, self.title)
+    }
+}
+
 pub struct Event {
     uuid: Uuid,
     title: String,
