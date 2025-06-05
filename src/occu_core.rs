@@ -61,10 +61,6 @@ impl Event {
     pub fn title(&self) -> &String {
         &self.title
     }
-
-    pub fn id(&self) -> &Uuid {
-        &self.uuid
-    }
 }
 
 impl fmt::Display for Event {
