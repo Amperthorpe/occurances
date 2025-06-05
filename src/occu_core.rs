@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
@@ -6,7 +6,6 @@ use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Occurance {
-    id: usize,
     title: String,
     description: String,
     created_at: DateTime<Local>,
@@ -14,9 +13,8 @@ pub struct Occurance {
 }
 
 impl Occurance {
-    fn new(id: usize, title: String, description: String) -> Self {
+    fn new(title: String, description: String) -> Self {
         Self {
-            id,
             title,
             description,
             created_at: Local::now(),
@@ -34,7 +32,7 @@ impl Occurance {
 
 impl fmt::Display for Occurance {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Occurance [ {}: '{}' ]", self.id, self.title)
+        write!(f, "Occurance [ {}: '{}' ]", self.title, self.description)
     }
 }
 
@@ -61,7 +59,7 @@ impl Event {
     }
 
     pub fn occur(&mut self, title: String, description: String) {
-        let new_occu = Occurance::new(self.occurances.len(), title, description);
+        let new_occu = Occurance::new(title, description);
         self.occurances.push(new_occu);
     }
 
