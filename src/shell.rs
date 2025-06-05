@@ -99,7 +99,7 @@ fn list_events(event_map: &EventMap) -> Result<(), OccuError> {
                 .ok_or(OccuError::InvalidUuidTimestamp)?
                 .with_timezone(&Local)
                 .format("%Y-%m-%d %I:%M %p");
-            println!("{i}. {str_timestamp}\n {event:?}\n");
+            println!("{i}. {str_timestamp}\n {event}\n");
         }
         Ok(())
     }
