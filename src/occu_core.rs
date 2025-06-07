@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local, Utc};
+use ordermap::OrderMap;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fmt;
 use uuid::Uuid;
 
@@ -9,7 +9,7 @@ pub struct Occurance {
     title: String,
     description: String,
     created_at: DateTime<Local>,
-    metadata: HashMap<String, String>,
+    metadata: OrderMap<String, String>,
 }
 
 impl Occurance {
@@ -18,7 +18,7 @@ impl Occurance {
             title,
             description,
             created_at: Local::now(),
-            metadata: HashMap::new(),
+            metadata: OrderMap::new(),
         }
     }
 
