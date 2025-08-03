@@ -1,4 +1,5 @@
 #![allow(unused)]
+pub mod cli;
 pub mod shell;
 pub mod tui;
 

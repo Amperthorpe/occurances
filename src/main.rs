@@ -1,5 +1,5 @@
-use occurances_app::shell;
+use occurances_app::cli;
 
 fn main() {
-    shell::cli::run_cli();
+    cli::run_cli();
 }
