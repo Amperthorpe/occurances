@@ -1,7 +1,5 @@
-mod occu_core;
-mod shell;
-
+use occurances_app::tui;
 fn main() {
-    println!("Starting Occurances CLI");
-    shell::run_shell();
+    println!("Starting Occurances");
+    tui::tui_main().unwrap();
 }

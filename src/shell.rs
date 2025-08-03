@@ -1,4 +1,4 @@
-use crate::occu_core::Event;
+use crate::Event;
 use chrono::{DateTime, Local};
 use ordermap::OrderMap;
 use std::{
