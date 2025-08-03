@@ -1,5 +1,4 @@
-use occurances_app::tui;
+use occurances_app::shell;
 fn main() {
     println!("Starting Occurances");
-    tui::tui_main().unwrap();
 }
