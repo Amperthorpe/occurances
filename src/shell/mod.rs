@@ -1,3 +1,5 @@
+pub mod cli;
+
 use crate::Event;
 use chrono::{DateTime, Local};
 use ordermap::OrderMap;

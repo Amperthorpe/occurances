@@ -1,4 +1,5 @@
 use occurances_app::shell;
+
 fn main() {
-    println!("Starting Occurances");
+    shell::cli::run_cli();
 }
